@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Cardio Tracker
 
 App web mobile-first para registrar treinos de cardio e visualizar progresso com gráficos.
@@ -80,3 +81,6 @@ Acesse [http://localhost:3000](http://localhost:3000). No celular, use o mesmo I
 - Tempo é armazenado em **segundos** no banco (ex.: 12m30s = 750).
 - **Pace** = tempo ÷ distância (segundos por km), exibido como `mm:ss`/km.
 - Distância aceita decimais (ex.: 3.2, 10.5).
+=======
+# Cardio-Tracker
+>>>>>>> 4b2a743ca85707bee26d47811aa7a907f054b8f6
