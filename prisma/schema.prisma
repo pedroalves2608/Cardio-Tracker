@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model CardioSession {
+  id              String   @id @default(uuid())
+  date            DateTime
+  durationSeconds Int
+  distanceKm      Float
+  ankleWeight     Boolean  @default(false)
+  ankleWeightKg   Float?   // peso em kg no pé (quando null e ankleWeight true = peso não informado)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

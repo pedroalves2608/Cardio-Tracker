@@ -1,0 +1,25 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# next
+.next/
+out/
+
+# prisma
+prisma/*.db
+prisma/*.db-journal
+
+# misc
+.DS_Store
+*.pem
+.env
+.env*.local
+vercel.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# typescript
+next-env.d.ts
