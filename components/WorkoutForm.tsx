@@ -17,12 +17,27 @@ type WorkoutFormProps = {
   onCancel: () => void;
 };
 
-function toDateLocal(iso: string): string {
+/** Converte ISO para exibição no padrão brasileiro DD/MM/AAAA */
+function toDateBR(iso: string): string {
   const d = new Date(iso);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const y = d.getFullYear();
+  return `${day}/${m}/${y}`;
+}
+
+/** Parse string DD/MM/AAAA para Date (retorna invalid Date se inválido) */
+function parseDateBR(str: string): Date {
+  const trimmed = str.trim().replace(/\s/g, "");
+  const parts = trimmed.split("/");
+  if (parts.length !== 3) return new Date(NaN);
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const year = parseInt(parts[2], 10);
+  if (isNaN(day) || isNaN(month) || isNaN(year)) return new Date(NaN);
+  const d = new Date(year, month, day);
+  if (d.getDate() !== day || d.getMonth() !== month || d.getFullYear() !== year) return new Date(NaN);
+  return d;
 }
 
 function toTimeFromSeconds(seconds: number): string {
@@ -33,7 +48,7 @@ function toTimeFromSeconds(seconds: number): string {
 
 export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
   const [date, setDate] = useState(
-    initial?.date ? toDateLocal(initial.date) : toDateLocal(new Date().toISOString())
+    initial?.date ? toDateBR(initial.date) : toDateBR(new Date().toISOString())
   );
   const [timeInput, setTimeInput] = useState(
     initial?.durationSeconds != null
@@ -55,7 +70,11 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
 
   const validate = useCallback((): boolean => {
     const e: Record<string, string> = {};
-    if (!date.trim()) e.date = "Informe a data.";
+    if (!date.trim()) e.date = "Informe a data (dia/mês/ano).";
+    else {
+      const parsed = parseDateBR(date);
+      if (isNaN(parsed.getTime())) e.date = "Data inválida. Use o formato DD/MM/AAAA (ex: 03/05/2026).";
+    }
     const durationSeconds = parseTimeToSeconds(timeInput);
     if (durationSeconds <= 0) e.time = "Informe o tempo (ex: 12 ou 12:30).";
     const dist = parseFloat(distance.replace(",", "."));
@@ -77,8 +96,9 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
           : null;
       const weightValue =
         weightKg != null && !isNaN(weightKg) && weightKg > 0 ? weightKg : null;
+      const dateObj = parseDateBR(date);
       await onSave({
-        date: new Date(date).toISOString(),
+        date: dateObj.toISOString(),
         durationSeconds,
         distanceKm,
         ankleWeight,
@@ -97,13 +117,16 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
     <form onSubmit={handleSubmit} className="p-4 space-y-5 max-w-app mx-auto">
       <div>
         <label htmlFor="date" className="block text-sm font-medium text-slate-700 mb-1">
-          Data do treino
+          Data do treino (dia/mês/ano)
         </label>
         <input
           id="date"
-          type="date"
+          type="text"
+          inputMode="numeric"
+          placeholder="DD/MM/AAAA (ex: 03/05/2026)"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          maxLength={10}
           className="w-full h-12 px-4 rounded-xl border border-slate-300 text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date}</p>}

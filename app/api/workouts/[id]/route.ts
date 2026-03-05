@@ -83,7 +83,10 @@ export async function DELETE(
   const { id } = await params;
   try {
     await prisma.cardioSession.delete({ where: { id } });
-    return NextResponse.json({ ok: true });
+    return NextResponse.json(
+      { ok: true },
+      { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
+    );
   } catch (error) {
     console.error("DELETE /api/workouts/[id]", error);
     return NextResponse.json(

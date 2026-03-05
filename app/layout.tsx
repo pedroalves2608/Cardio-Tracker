@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { BottomNav } from "@/components/BottomNav";
+import { BottomNavWrapper } from "@/components/BottomNavWrapper";
 
 export const metadata: Metadata = {
   title: "Cardio Tracker",
@@ -18,7 +18,7 @@ export default function RootLayout({
         <main className="w-full max-w-app flex-1 flex flex-col pb-20 pb-safe">
           {children}
         </main>
-        <BottomNav />
+        <BottomNavWrapper />
       </body>
     </html>
   );

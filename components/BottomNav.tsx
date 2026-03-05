@@ -7,6 +7,7 @@ const navItems = [
   { href: "/workouts", label: "Treinos", icon: "📋" },
   { href: "/workouts/new", label: "Adicionar", icon: "➕" },
   { href: "/charts", label: "Gráficos", icon: "📈" },
+  { href: "/logout", label: "Sair", icon: "🚪" },
 ];
 
 export function BottomNav() {
@@ -21,8 +22,8 @@ export function BottomNav() {
         {navItems.map(({ href, label, icon }) => {
           const isActive =
             href === "/workouts"
-              ? pathname === "/" || pathname === "/workouts" || pathname.startsWith("/workouts/") && pathname !== "/workouts/new"
-              : pathname === href;
+              ? pathname === "/" || pathname === "/workouts" || (pathname.startsWith("/workouts/") && pathname !== "/workouts/new")
+              : href !== "/logout" && pathname === href;
           return (
             <Link
               key={href}

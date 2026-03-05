@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createWorkoutSchema } from "@/lib/validation";
 
+const noStore = () => ({ "Cache-Control": "no-store, no-cache, must-revalidate" });
+
 export async function GET() {
   try {
     const sessions = await prisma.cardioSession.findMany({
@@ -13,7 +15,7 @@ export async function GET() {
       createdAt: s.createdAt.toISOString(),
       updatedAt: s.updatedAt.toISOString(),
     }));
-    return NextResponse.json(data);
+    return NextResponse.json(data, { headers: noStore() });
   } catch (error) {
     console.error("GET /api/workouts", error);
     return NextResponse.json(

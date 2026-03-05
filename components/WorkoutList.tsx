@@ -72,6 +72,7 @@ export function WorkoutList({ workouts, onDelete, loading }: WorkoutListProps) {
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   if (confirm("Excluir este treino?")) onDelete(w.id);
                 }}
                 className="mt-2 text-sm text-red-600 hover:underline"

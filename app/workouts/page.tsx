@@ -12,7 +12,7 @@ export default function WorkoutsPage() {
 
   const fetchWorkouts = async () => {
     try {
-      const res = await fetch("/api/workouts");
+      const res = await fetch("/api/workouts", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setWorkouts(data);
@@ -27,8 +27,11 @@ export default function WorkoutsPage() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/workouts/${id}`, { method: "DELETE" });
-    if (res.ok) setWorkouts((prev) => prev.filter((w) => w.id !== id));
+    const res = await fetch(`/api/workouts/${id}`, { method: "DELETE", cache: "no-store" });
+    if (res.ok) {
+      setWorkouts((prev) => prev.filter((w) => w.id !== id));
+      await fetchWorkouts();
+    }
   };
 
   return (
