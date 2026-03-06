@@ -2,8 +2,10 @@
 
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { CardioSession } from "@/lib/types";
 import { WorkoutForm } from "@/components/WorkoutForm";
+import { getPostWorkoutMessage } from "@/lib/messages";
 
 export default function EditWorkoutPage() {
   const router = useRouter();
@@ -43,21 +45,23 @@ export default function EditWorkoutPage() {
       } catch {
         if (text) msg = text.slice(0, 200);
       }
+      toast.error(msg);
       throw new Error(msg);
     }
+    toast.success(getPostWorkoutMessage());
     router.push("/workouts");
   };
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-slate-500">Carregando…</div>
+      <div className="p-8 text-center text-ink-500">Carregando…</div>
     );
   }
 
   if (!workout) {
     return (
       <div className="p-8 text-center">
-        <p className="text-slate-600">Treino não encontrado.</p>
+        <p className="text-ink-600">Treino não encontrado.</p>
         <button
           type="button"
           onClick={() => router.push("/workouts")}
@@ -71,11 +75,6 @@ export default function EditWorkoutPage() {
 
   return (
     <div className="flex flex-col min-h-full">
-      <header className="border-b border-slate-200 px-4 py-4 bg-white">
-        <h1 className="text-xl font-bold text-slate-900 max-w-app mx-auto">
-          Editar treino
-        </h1>
-      </header>
       <WorkoutForm
         initial={workout}
         onSave={handleSave}

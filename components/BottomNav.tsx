@@ -7,6 +7,10 @@ const navItems = [
   { href: "/workouts", label: "Treinos", icon: "📋" },
   { href: "/workouts/new", label: "Adicionar", icon: "➕" },
   { href: "/charts", label: "Gráficos", icon: "📈" },
+  { href: "/prs", label: "PRs", icon: "🏆" },
+  { href: "/achievements", label: "Conquistas", icon: "🎯" },
+  { href: "/templates", label: "Templates", icon: "📄" },
+  { href: "/profile", label: "Perfil", icon: "👤" },
   { href: "/logout", label: "Sair", icon: "🚪" },
 ];
 
@@ -15,7 +19,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-lg pb-safe"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-sand-50/98 backdrop-blur border-t border-sand-300/60 shadow-card pb-safe"
       style={{ maxWidth: "var(--max-app, 28rem)", margin: "0 auto" }}
     >
       <div className="flex justify-around items-center h-16">
@@ -23,18 +27,18 @@ export function BottomNav() {
           const isActive =
             href === "/workouts"
               ? pathname === "/" || pathname === "/workouts" || (pathname.startsWith("/workouts/") && pathname !== "/workouts/new")
-              : href !== "/logout" && pathname === href;
+              : href !== "/logout" && pathname.startsWith(href);
           return (
             <Link
               key={href}
               href={href === "/workouts" ? "/" : href}
-              className={`flex flex-col items-center justify-center flex-1 py-2 text-sm font-medium min-w-0 ${
+              className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium min-w-0 touch-target ${
                 isActive
-                  ? "text-primary-600 bg-primary-50"
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "text-primary-600"
+                  : "text-ink-500 active:text-ink-700"
               }`}
             >
-              <span className="text-xl mb-0.5" aria-hidden>
+              <span className="text-lg mb-0.5" aria-hidden>
                 {icon}
               </span>
               <span>{label}</span>

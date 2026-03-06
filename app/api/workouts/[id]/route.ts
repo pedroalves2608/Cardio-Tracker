@@ -1,15 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { updateWorkoutSchema } from "@/lib/validation";
+import { getSession } from "@/lib/session";
+
+function canAccessWorkout(userId: string, workoutUserId: string | null): boolean {
+  if (userId === "env-fallback") return true;
+  return workoutUserId === userId;
+}
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   try {
+    const auth = await getSession(request);
+    if (!auth) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
     const session = await prisma.cardioSession.findUnique({ where: { id } });
     if (!session) {
+      return NextResponse.json({ error: "Treino não encontrado" }, { status: 404 });
+    }
+    if (!canAccessWorkout(auth.userId, session.userId)) {
       return NextResponse.json({ error: "Treino não encontrado" }, { status: 404 });
     }
     return NextResponse.json({
@@ -33,6 +46,10 @@ export async function PUT(
 ) {
   const { id } = await params;
   try {
+    const auth = await getSession(request);
+    if (!auth) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
     const body = await request.json();
     const parsed = updateWorkoutSchema.safeParse(body);
     if (!parsed.success) {
@@ -43,6 +60,9 @@ export async function PUT(
     }
     const existing = await prisma.cardioSession.findUnique({ where: { id } });
     if (!existing) {
+      return NextResponse.json({ error: "Treino não encontrado" }, { status: 404 });
+    }
+    if (!canAccessWorkout(auth.userId, existing.userId)) {
       return NextResponse.json({ error: "Treino não encontrado" }, { status: 404 });
     }
     const data: Record<string, unknown> = {};
@@ -77,11 +97,22 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   try {
+    const auth = await getSession(request);
+    if (!auth) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+    const existing = await prisma.cardioSession.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Treino não encontrado" }, { status: 404 });
+    }
+    if (!canAccessWorkout(auth.userId, existing.userId)) {
+      return NextResponse.json({ error: "Treino não encontrado" }, { status: 404 });
+    }
     await prisma.cardioSession.delete({ where: { id } });
     return NextResponse.json(
       { ok: true },

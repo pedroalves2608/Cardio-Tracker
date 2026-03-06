@@ -10,13 +10,15 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import type { CardioSession } from "@/lib/types";
+import type { CardioSession, StrengthSession } from "@/lib/types";
 import { formatPace, paceSecondsPerKm, loadKgKm } from "@/lib/utils";
-import { format, subDays, isWithinInterval } from "date-fns";
+import { format, subDays, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { ChartRange } from "@/lib/types";
 
+type MainTab = "cardio" | "strength";
 type Tab = "distance" | "time" | "pace";
+type WeightFilter = "all" | "with" | "without";
 
 const ranges: { value: ChartRange; label: string }[] = [
   { value: "7", label: "7 dias" },
@@ -27,26 +29,31 @@ const ranges: { value: ChartRange; label: string }[] = [
 
 type ChartsViewProps = {
   workouts: CardioSession[];
+  strengthSessions?: StrengthSession[];
   loading?: boolean;
 };
 
-export function ChartsView({ workouts, loading }: ChartsViewProps) {
+export function ChartsView({ workouts, strengthSessions = [], loading }: ChartsViewProps) {
+  const [mainTab, setMainTab] = useState<MainTab>("cardio");
   const [tab, setTab] = useState<Tab>("distance");
   const [range, setRange] = useState<ChartRange>("30");
-  const [ankleOnly, setAnkleOnly] = useState(false);
+  const [weightFilter, setWeightFilter] = useState<WeightFilter>("all");
 
   const filtered = useMemo(() => {
     const hasWeight = (w: CardioSession) =>
       w.ankleWeight || (w.ankleWeightKg != null && w.ankleWeightKg > 0);
-    let list = ankleOnly ? workouts.filter(hasWeight) : workouts;
-    if (range === "all") return list;
-    const days = parseInt(range, 10);
-    const since = subDays(new Date(), days);
-    list = list.filter((w) => new Date(w.date) >= since);
+    let list = workouts;
+    if (weightFilter === "with") list = workouts.filter(hasWeight);
+    if (weightFilter === "without") list = workouts.filter((w) => !hasWeight(w));
+    if (range !== "all") {
+      const days = parseInt(range, 10);
+      const since = subDays(new Date(), days);
+      list = list.filter((w) => new Date(w.date) >= since);
+    }
     return list.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-  }, [workouts, range, ankleOnly]);
+  }, [workouts, range, weightFilter]);
 
   const chartData = useMemo(() => {
     return filtered.map((w) => {
@@ -67,15 +74,46 @@ export function ChartsView({ workouts, loading }: ChartsViewProps) {
     });
   }, [filtered]);
 
+  const strengthChartData = useMemo(() => {
+    const since =
+      range === "all"
+        ? null
+        : subDays(new Date(), parseInt(range, 10));
+    const strengthFiltered = since
+      ? strengthSessions.filter((s) => new Date(s.date) >= since)
+      : [...strengthSessions];
+    const byWeek = new Map<string, { weekLabel: string; sessions: number; volumeKg: number }>();
+    for (const s of strengthFiltered) {
+      const d = new Date(s.date);
+      const weekStart = startOfWeek(d, { weekStartsOn: 0 });
+      const key = weekStart.toISOString().slice(0, 10);
+      if (!byWeek.has(key)) {
+        byWeek.set(key, {
+          weekLabel: format(weekStart, "dd/MM", { locale: ptBR }),
+          sessions: 0,
+          volumeKg: 0,
+        });
+      }
+      const row = byWeek.get(key)!;
+      row.sessions += 1;
+      for (const set of s.sets) row.volumeKg += set.reps * set.weightKg;
+    }
+    return Array.from(byWeek.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([, v]) => ({ ...v, volumeKg: Math.round(v.volumeKg * 10) / 10 }));
+  }, [strengthSessions, range]);
+
   if (loading) {
     return (
-      <div className="p-8 text-center text-slate-500">Carregando…</div>
+      <div className="p-8 text-center text-ink-500">Carregando…</div>
     );
   }
 
-  if (!workouts.length) {
+  const hasCardio = workouts.length > 0;
+  const hasStrength = strengthSessions.length > 0;
+  if (!hasCardio && !hasStrength) {
     return (
-      <div className="p-8 text-center text-slate-500">
+      <div className="p-8 text-center text-ink-500">
         <p className="text-lg">Nenhum treino cadastrado ainda.</p>
         <p className="mt-2 text-sm">Registre treinos para ver os gráficos.</p>
       </div>
@@ -84,6 +122,61 @@ export function ChartsView({ workouts, loading }: ChartsViewProps) {
 
   return (
     <div className="p-4 space-y-4 max-w-app mx-auto">
+      <div className="flex gap-2 pb-2">
+        <button
+          type="button"
+          onClick={() => setMainTab("cardio")}
+          className={`px-4 py-2 rounded-xl font-medium ${mainTab === "cardio" ? "bg-primary-600 text-white" : "bg-sand-200 text-ink-700"}`}
+        >
+          Cardio
+        </button>
+        <button
+          type="button"
+          onClick={() => setMainTab("strength")}
+          className={`px-4 py-2 rounded-xl font-medium ${mainTab === "strength" ? "bg-primary-600 text-white" : "bg-sand-200 text-ink-700"}`}
+        >
+          Força
+        </button>
+      </div>
+
+      {mainTab === "strength" && (
+        <>
+          <div className="flex flex-wrap gap-2">
+            {ranges.map((r) => (
+              <button
+                key={r.value}
+                type="button"
+                onClick={() => setRange(r.value)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                  range === r.value ? "bg-primary-100 text-primary-700" : "bg-sand-100 text-ink-600"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+          {strengthChartData.length === 0 ? (
+            <div className="py-12 text-center text-ink-500">Nenhum treino de força no período.</div>
+          ) : (
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={strengthChartData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="weekLabel" tick={{ fontSize: 12 }} stroke="#64748b" />
+                  <YAxis yAxisId="left" tick={{ fontSize: 12 }} stroke="#64748b" />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} stroke="#64748b" tickFormatter={(v) => `${v} kg`} />
+                  <Tooltip contentStyle={{ borderRadius: "12px" }} />
+                  <Line yAxisId="left" type="monotone" dataKey="sessions" name="Treinos" stroke="#16a34a" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line yAxisId="right" type="monotone" dataKey="volumeKg" name="Volume (kg)" stroke="#2563eb" strokeWidth={2} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </>
+      )}
+
+      {mainTab === "cardio" && (
+        <>
       <div className="flex gap-2 overflow-x-auto pb-2">
         {(["distance", "time", "pace"] as const).map((t) => (
           <button
@@ -93,7 +186,7 @@ export function ChartsView({ workouts, loading }: ChartsViewProps) {
             className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap ${
               tab === t
                 ? "bg-primary-600 text-white"
-                : "bg-slate-200 text-slate-700"
+                : "bg-sand-200 text-ink-700"
             }`}
           >
             {t === "distance" && "Distância"}
@@ -112,7 +205,7 @@ export function ChartsView({ workouts, loading }: ChartsViewProps) {
             className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
               range === r.value
                 ? "bg-primary-100 text-primary-700"
-                : "bg-slate-100 text-slate-600"
+                : "bg-sand-100 text-ink-600"
             }`}
           >
             {r.label}
@@ -120,20 +213,32 @@ export function ChartsView({ workouts, loading }: ChartsViewProps) {
         ))}
       </div>
 
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={ankleOnly}
-          onChange={(e) => setAnkleOnly(e.target.checked)}
-          className="h-5 w-5 rounded border-slate-300 text-primary-600"
-        />
-        <span className="text-sm font-medium text-slate-700">
-          Somente com peso no pé
-        </span>
-      </label>
+      <div>
+        <p className="text-sm font-medium text-ink-700 mb-2">Treinos</p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { value: "all" as const, label: "Todos" },
+            { value: "with" as const, label: "Com peso no pé" },
+            { value: "without" as const, label: "Sem peso no pé" },
+          ].map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setWeightFilter(value)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                weightFilter === value
+                  ? "bg-primary-600 text-white"
+                  : "bg-sand-100 text-ink-600"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {!filtered.length ? (
-        <div className="py-12 text-center text-slate-500">
+        <div className="py-12 text-center text-ink-500">
           Nenhum dado no período selecionado.
         </div>
       ) : (
@@ -208,6 +313,8 @@ export function ChartsView({ workouts, loading }: ChartsViewProps) {
             </LineChart>
           </ResponsiveContainer>
         </div>
+      )}
+        </>
       )}
     </div>
   );

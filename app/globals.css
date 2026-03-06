@@ -4,13 +4,34 @@
 
 :root {
   --max-app: 28rem;
+  --color-olive: #556B2F;
+  --color-sand-bg: #FAF8F3;
+  --color-ink: #0a0a0a;
+  --app-bar-h: 3.5rem;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-sand-50 text-ink-900 antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Safe area for mobile bottom nav */
+/* Safe area for mobile */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Touch-friendly minimum 44px */
+@layer utilities {
+  .touch-target {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+  /* Premium card elevation */
+  .shadow-premium {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  }
 }

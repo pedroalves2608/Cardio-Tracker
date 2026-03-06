@@ -17,7 +17,7 @@ export default function LogoutPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <p className="text-slate-600">Saindo…</p>
+      <p className="text-ink-600">Saindo…</p>
     </div>
   );
 }

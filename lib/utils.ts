@@ -38,6 +38,16 @@ export function loadKgKm(distanceKm: number, ankleWeightKg: number | null | unde
 }
 
 /**
+ * Estimativa de 1RM (1 repetição máxima) pela fórmula de Epley.
+ * weightKg * (1 + reps/30). Usado para comparar desempenho entre séries com reps diferentes.
+ */
+export function estimated1RM(weightKg: number, reps: number): number {
+  if (reps <= 0) return 0;
+  if (reps === 1) return weightKg;
+  return Math.round(weightKg * (1 + reps / 30) * 10) / 10;
+}
+
+/**
  * Parse "mm" or "mm:ss" or "m" to total seconds.
  */
 export function parseTimeToSeconds(input: string): number {

@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { WorkoutForm } from "@/components/WorkoutForm";
+import { getPostWorkoutMessage, getGoalAttainedMessage } from "@/lib/messages";
 
 export default function NewWorkoutPage() {
   const router = useRouter();
@@ -28,18 +30,21 @@ export default function NewWorkoutPage() {
       } catch {
         if (text) msg = text.slice(0, 200);
       }
+      toast.error(msg);
       throw new Error(msg);
     }
+    const result = await res.json();
+    toast.success(getPostWorkoutMessage());
+    if (result.newPr) toast.success("Novo recorde em " + result.newPr.label + "!");
+    if (result.goalAttained) toast.success(getGoalAttainedMessage());
+    (result.newlyUnlocked ?? []).forEach((u: { name: string }) =>
+      toast.success("Conquista desbloqueada: " + u.name)
+    );
     router.push("/workouts");
   };
 
   return (
     <div className="flex flex-col min-h-full">
-      <header className="border-b border-slate-200 px-4 py-4 bg-white">
-        <h1 className="text-xl font-bold text-slate-900 max-w-app mx-auto">
-          Novo treino
-        </h1>
-      </header>
       <WorkoutForm onSave={handleSave} onCancel={() => router.push("/workouts")} />
     </div>
   );

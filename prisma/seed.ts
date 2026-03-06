@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { hash } from "bcryptjs";
 import { subDays } from "date-fns";
 
 const prisma = new PrismaClient();
@@ -12,6 +13,15 @@ function randomInt(min: number, max: number): number {
 }
 
 async function main() {
+  const userCount = await prisma.user.count();
+  if (userCount === 0) {
+    const passwordHash = await hash("admin", 10);
+    await prisma.user.create({
+      data: { username: "admin", passwordHash },
+    });
+    console.log("Seed: usuário padrão 'admin' criado (senha: admin).");
+  }
+
   const today = new Date();
   const sessions = [];
 

@@ -7,14 +7,107 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+model User {
+  id                   String   @id @default(uuid())
+  username             String   @unique
+  email                String?  @unique
+  emailVerifiedAt      DateTime?
+  passwordHash         String
+  goalsJson            String?
+  weeklyGoalAttainedAt DateTime?  // primeira vez que bateu meta semanal
+  usedTemplateAt       DateTime?  // primeira vez que usou um template
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  cardioSessions           CardioSession[]
+  strengthSessions         StrengthSession[]
+  strengthTemplates        StrengthTemplate[]
+  userAchievements         UserAchievement[]
+  passwordResetTokens      PasswordResetToken[]
+  emailVerificationTokens  EmailVerificationToken[]
+}
+
+model UserAchievement {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementSlug String
+  unlockedAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+  @@unique([userId, achievementSlug])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 model CardioSession {
   id              String   @id @default(uuid())
   date            DateTime
   durationSeconds Int
   distanceKm      Float
   ankleWeight     Boolean  @default(false)
-  ankleWeightKg   Float?   // peso em kg no pé (quando null e ankleWeight true = peso não informado)
+  ankleWeightKg   Float?
   notes           String?
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model StrengthSession {
+  id        String   @id @default(uuid())
+  date      DateTime
+  notes     String?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sets      StrengthSet[]
+}
+
+model StrengthSet {
+  id           String         @id @default(uuid())
+  sessionId    String
+  session      StrengthSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseName String
+  setNumber    Int
+  reps         Int
+  weightKg     Float
+  createdAt    DateTime      @default(now())
+}
+
+model StrengthTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  exercises StrengthTemplateExercise[]
+}
+
+model StrengthTemplateExercise {
+  id             String           @id @default(uuid())
+  templateId     String
+  template       StrengthTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  exerciseName   String
+  order          Int
+  setsCount      Int
+  defaultReps    Int?
+  defaultWeightKg Float?
+  createdAt      DateTime        @default(now())
 }

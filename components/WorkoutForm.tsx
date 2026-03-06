@@ -116,7 +116,7 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
   return (
     <form onSubmit={handleSubmit} className="p-4 space-y-5 max-w-app mx-auto">
       <div>
-        <label htmlFor="date" className="block text-sm font-medium text-slate-700 mb-1">
+        <label htmlFor="date" className="block text-sm font-medium text-ink-700 mb-1">
           Data do treino (dia/mês/ano)
         </label>
         <input
@@ -127,13 +127,13 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
           value={date}
           onChange={(e) => setDate(e.target.value)}
           maxLength={10}
-          className="w-full h-12 px-4 rounded-xl border border-slate-300 text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full h-12 px-4 rounded-xl border border-sand-400 text-base focus:ring-2 focus:ring-primary-500/30/30 focus:border-primary-500"
         />
         {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date}</p>}
       </div>
 
       <div>
-        <label htmlFor="time" className="block text-sm font-medium text-slate-700 mb-1">
+        <label htmlFor="time" className="block text-sm font-medium text-ink-700 mb-1">
           Tempo (minutos:segundos, ex: 12:30)
         </label>
         <input
@@ -143,13 +143,13 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
           placeholder="12:30"
           value={timeInput}
           onChange={(e) => setTimeInput(e.target.value)}
-          className="w-full h-12 px-4 rounded-xl border border-slate-300 text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full h-12 px-4 rounded-xl border border-sand-400 text-base focus:ring-2 focus:ring-primary-500/30/30 focus:border-primary-500"
         />
         {errors.time && <p className="mt-1 text-sm text-red-600">{errors.time}</p>}
       </div>
 
       <div>
-        <label htmlFor="distance" className="block text-sm font-medium text-slate-700 mb-1">
+        <label htmlFor="distance" className="block text-sm font-medium text-ink-700 mb-1">
           Distância (km)
         </label>
         <input
@@ -159,7 +159,7 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
           placeholder="5.2"
           value={distance}
           onChange={(e) => setDistance(e.target.value)}
-          className="w-full h-12 px-4 rounded-xl border border-slate-300 text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full h-12 px-4 rounded-xl border border-sand-400 text-base focus:ring-2 focus:ring-primary-500/30/30 focus:border-primary-500"
         />
         {errors.distance && <p className="mt-1 text-sm text-red-600">{errors.distance}</p>}
       </div>
@@ -170,15 +170,15 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
           type="checkbox"
           checked={ankleWeight}
           onChange={(e) => setAnkleWeight(e.target.checked)}
-          className="h-6 w-6 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+          className="h-6 w-6 rounded border-sand-400 text-primary-600 focus:ring-primary-500/30"
         />
-        <label htmlFor="ankle" className="text-base font-medium text-slate-700">
+        <label htmlFor="ankle" className="text-base font-medium text-ink-700">
           Com peso no pé?
         </label>
       </div>
       {ankleWeight && (
         <div>
-          <label htmlFor="ankleKg" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="ankleKg" className="block text-sm font-medium text-ink-700 mb-1">
             Peso no pé (kg)
           </label>
           <input
@@ -188,16 +188,16 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
             placeholder="Ex: 0.5, 1, 2"
             value={ankleWeightKg}
             onChange={(e) => setAnkleWeightKg(e.target.value)}
-            className="w-full h-12 px-4 rounded-xl border border-slate-300 text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="w-full h-12 px-4 rounded-xl border border-sand-400 text-base focus:ring-2 focus:ring-primary-500/30/30 focus:border-primary-500"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-ink-500">
             Opcional. Se informado, o app calcula a carga (distância × peso) para comparar treinos.
           </p>
         </div>
       )}
 
       <div>
-        <label htmlFor="notes" className="block text-sm font-medium text-slate-700 mb-1">
+        <label htmlFor="notes" className="block text-sm font-medium text-ink-700 mb-1">
           Notas (opcional)
         </label>
         <textarea
@@ -206,7 +206,7 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Ex: corrida leve, esteira..."
-          className="w-full px-4 py-3 rounded-xl border border-slate-300 text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+          className="w-full px-4 py-3 rounded-xl border border-sand-400 text-base focus:ring-2 focus:ring-primary-500/30/30 focus:border-primary-500 resize-none"
         />
       </div>
 
@@ -218,14 +218,14 @@ export function WorkoutForm({ initial, onSave, onCancel }: WorkoutFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 h-12 rounded-xl border border-slate-300 font-medium text-slate-700 bg-white"
+          className="flex-1 h-12 rounded-xl border border-sand-400 font-medium text-ink-700 bg-white"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={saving}
-          className="flex-1 h-12 rounded-xl bg-primary-600 font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+          className="flex-1 h-12 rounded-xl bg-primary-600 font-medium text-white active:opacity-90 disabled:opacity-50"
         >
           {saving ? "Salvando…" : "Salvar"}
         </button>
